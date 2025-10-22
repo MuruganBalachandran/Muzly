@@ -1,8 +1,14 @@
-# Muzly Music Recommender Model
+# Muzly Music Recommender System
 
 ## Overview
 This directory contains the core model components of the Muzly Music Recommender system, which uses computer vision and machine learning to recommend music based on emotions, context, and environmental factors.
 
+## UI Images
+<img width="1911" height="780" alt="Image" src="https://github.com/user-attachments/assets/0e1f2e9a-4cde-49e0-81c5-befff41075f5" />
+<img width="1907" height="596" alt="Image" src="https://github.com/user-attachments/assets/7a8d1373-dba1-4430-85cb-5f531b21df57" />
+<img width="1914" height="643" alt="Image" src="https://github.com/user-attachments/assets/a3b84084-0fb7-4f86-978c-eeb1df1dfd08" />
+<img width="1901" height="913" alt="Image" src="https://github.com/user-attachments/assets/6c6b8fc7-c581-4f6a-b4b7-7954bd0edf1e" />
+<img width="1904" height="893" alt="Image" src="https://github.com/user-attachments/assets/54d825ed-fc2d-444d-aeca-4cf81de89b1c" />
 ## Key Components
 
 ### 1. Emotion Detection Model
