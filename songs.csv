@@ -1,16 +1,16 @@
 songname,artist,language,emotion,context,image_climate
 Happy,Pharrell Williams,English,happy,party,clear
 Someone Like You,Adele,English,sad,home,rain
-In the End,Linkin Park,English,angry,concert,night
+In the End,Linkin Park,English,anger,concert,night
 Perfect,Ed Sheeran,English,neutral,home,clear
 Uptown Funk,Mark Ronson ft. Bruno Mars,English,happy,party,clear
 Viva La Vida,Coldplay,English,neutral,concert,clear
-Believer,Imagine Dragons,English,angry,gym,clear
+Believer,Imagine Dragons,English,anger,gym,clear
 Dance Monkey,Tones and I,English,surprise,party,clear
 Shape of You,Ed Sheeran,English,happy,beach,sunny
 Bohemian Rhapsody,Queen,English,surprise,concert,night
 Bad Guy,Billie Eilish,English,disgust,party,night
-Thunder,Imagine Dragons,English,angry,roadtrip,clear
+Thunder,Imagine Dragons,English,anger,roadtrip,clear
 Rolling in the Deep,Adele,English,sad,home,rain
 Blinding Lights,The Weeknd,English,happy,party,clear
 Levitating,Dua Lipa,English,happy,party,clear
@@ -21,44 +21,100 @@ Shallow,Lady Gaga & Bradley Cooper,English,sad,concert,night
 Let Her Go,Passenger,English,sad,roadtrip,rain
 Blowin' in the Wind,Bob Dylan,English,neutral,roadtrip,clear
 Firework,Katy Perry,English,happy,festival,clear
-Love Story,Taylor Swift,English,romantic,home,clear
-Cheap Thrills,Sia,English,party,party,clear
-
+Love Story,Taylor Swift,English,happy,home,clear
+Cheap Thrills,Sia,English,happy,party,clear
+Lose Yourself,Eminem,English,anger,gym,clear
+Chandelier,Sia,English,sad,home,night
+Eye of the Tiger,Survivor,English,anger,gym,clear
+Stay,Rihanna ft. Mikky Ekko,English,sad,home,rain
+Radioactive,Imagine Dragons,English,surprise,concert,night
+Happier,Marshmello ft. Bastille,English,sad,home,cloudy
+Demons,Imagine Dragons,English,fear,home,night
+Counting Moments,James Bay,English,neutral,roadtrip,clear
+Everybody Hurts,R.E.M.,English,fear,home,night
+Fix You,Coldplay,English,fear,home,rain
+The Night We Met,Lord Huron,English,fear,home,cloudy
+Breathe Me,Sia,English,fear,home,night
+Hallelujah,Jeff Buckley,English,fear,home,night
+Unsteady,X Ambassadors,English,fear,home,cloudy
+Say Something,A Great Big World,English,fear,home,rain
+Lovely,Billie Eilish & Khalid,English,fear,home,night
+Mad World,Gary Jules,English,fear,home,night
+Creep,Radiohead,English,disgust,home,night
+Stressed Out,Twenty One Pilots,English,disgust,home,cloudy
+Boulevard of Broken Dreams,Green Day,English,disgust,roadtrip,night
+Heathens,Twenty One Pilots,English,disgust,party,night
+Toxic,Britney Spears,English,disgust,party,clear
+Bad Romance,Lady Gaga,English,disgust,party,clear
+Seven Nation Army,The White Stripes,English,disgust,gym,clear
+Black Sheep,Metric,English,disgust,concert,night
+The Sound of Silence,Simon & Garfunkel,English,fear,home,night
+Runaway,Aurora,English,fear,home,cloudy
+Everybody’s Changing,Keane,English,fear,home,rain
+Hollow Coves,Coastline,English,fear,roadtrip,cloudy
+Tears in Heaven,Eric Clapton,English,fear,home,rain
 Vaathi Coming,Anirudh Ravichander,Tamil,happy,party,clear
 Rowdy Baby,Dhanush & Dhee,Tamil,happy,party,clear
 Why This Kolaveri Di,Dhanush,Tamil,surprise,party,clear
-Anbil Avan,Haricharan & Chinmayi,Tamil,romantic,home,clear
-Munbe Vaa,Shreya Ghoshal & Naresh Iyer,Tamil,romantic,beach,sunny
+Anbil Avan,Haricharan & Chinmayi,Tamil,happy,home,clear
+Munbe Vaa,Shreya Ghoshal & Naresh Iyer,Tamil,happy,beach,sunny
 Naan Pizhaippeno,Santhosh Narayanan,Tamil,sad,home,rain
-Ennodu Nee Irundhaal,Shankar Mahadevan,Tamil,romantic,concert,clear
-Aalaporan Thamizhan,Kailash Kher,Tamil,proud,festival,clear
-Surviva,Anirudh Ravichander,Tamil,angry,gym,clear
+Ennodu Nee Irundhaal,Shankar Mahadevan,Tamil,happy,concert,clear
+Aalaporan Thamizhan,Kailash Kher,Tamil,neutral,festival,clear
+Surviva,Anirudh Ravichander,Tamil,anger,gym,clear
 Thaarame Thaarame,Chinmayi,Tamil,sad,home,rain
 Pudhu Metro Rail,Anirudh Ravichander,Tamil,neutral,roadtrip,cloudy
-Vinnaithaandi Varuvaayaa,Karthik,Tamil,romantic,beach,sunny
+Vinnaithaandi Varuvaayaa,Karthik,Tamil,happy,beach,sunny
 Othayadi Pathayila,Dhibu Ninan Thomas,Tamil,happy,roadtrip,clear
 Kutti Story,Vijay,Tamil,happy,party,clear
-Marana Mass,Anirudh Ravichander,Tamil,party,party,clear
-Chill Bro,Anirudh Ravichander,Tamil,fun,party,clear
+Marana Mass,Anirudh Ravichander,Tamil,happy,party,clear
+Chill Bro,Anirudh Ravichander,Tamil,happy,party,clear
 Kannana Kanne,Sid Sriram,Tamil,sad,home,rain
 Veyyon Silli,Pradeep Kumar,Tamil,happy,roadtrip,clear
-Sandakari Neethan,Shweta Mohan,Tamil,romantic,home,clear
-Enjoy Enjaami,Dhee & Arivu,Tamil,proud,festival,clear
-
-Jotheyali,Yashwant Nag,Kannada,romantic,home,clear
-Karabuu,Chandan Shetty,Kannada,party,party,clear
-Belageddu,Vijay Prakash,Kannada,romantic,roadtrip,clear
+Sandakari Neethan,Shweta Mohan,Tamil,happy,home,clear
+Enjoy Enjaami,Dhee & Arivu,Tamil,neutral,festival,clear
+Unakkena Venum Sollu,Harris Jayaraj,Tamil,sad,home,rain
+Sodakku,Anirudh Ravichander,Tamil,anger,festival,clear
+Selfie Pulla,Vijay & Sunidhi Chauhan,Tamil,happy,party,clear
+Po Nee Po,Dhanush,Tamil,sad,home,night
+Pookkal Pookkum,G.V. Prakash Kumar,Tamil,neutral,beach,sunny
+Idhazhin Oram,Anirudh Ravichander,Tamil,fear,home,night
+Theera Ula,Sid Sriram,Tamil,fear,roadtrip,cloudy
+Usure Pogudhey,Harris Jayaraj,Tamil,fear,home,rain
+Nee Enna Maayam Seidhai,Hariharan & Shreya Ghoshal,Tamil,fear,home,cloudy
+Jotheyali,Yashwant Nag,Kannada,happy,home,clear
+Karabuu,Chandan Shetty,Kannada,happy,party,clear
+Belageddu,Vijay Prakash,Kannada,happy,roadtrip,clear
 Bombay,Madhu Balakrishnan,Kannada,neutral,roadtrip,clear
-Tagaru Banthu,Shashank Sheshagiri,Kannada,angry,gym,clear
-
+Tagaru Banthu,Shashank Sheshagiri,Kannada,anger,gym,clear
+Ondu Male Billu,Sonu Nigam,Kannada,sad,home,rain
+Neene Neene,Sonu Nigam,Kannada,happy,beach,clear
+Open Stage,All Ok,Kannada,happy,party,clear
+Tunturu,Armaan Malik,Kannada,happy,home,sunny
+Hrudayada Patashala,Vijay Prakash,Kannada,neutral,home,clear
+Jagave Neenu,Vijay Prakash,Kannada,fear,home,rain
+Neene Beku,Sonu Nigam,Kannada,fear,home,night
 Butta Bomma,Armaan Malik,Telugu,happy,beach,sunny
-Samajavaragamana,Sid Sriram,Telugu,romantic,home,clear
-Ramuloo Ramulaa,Anurag Kulkarni,Telugu,party,party,clear
+Samajavaragamana,Sid Sriram,Telugu,happy,home,clear
+Ramuloo Ramulaa,Anurag Kulkarni,Telugu,happy,party,clear
 Ee Raathale,Karthik,Telugu,sad,roadtrip,rain
-Dheera Dheera,Shreya Ghoshal,Telugu,romantic,concert,night
-
-Malare,Pradeep Kumar,Malayalam,romantic,beach,sunny
-Entammede Jimikki Kammal,Vineeth Sreenivasan,Malayalam,fun,party,clear
+Dheera Dheera,Shreya Ghoshal,Telugu,happy,concert,night
+Srivalli,Javed Ali,Telugu,happy,home,clear
+Oo Antava,Indravathi Chauhan,Telugu,surprise,party,night
+Aha Meghamla,Vijay Prakash,Telugu,sad,home,rain
+Life is Beautiful,Anup Rubens,Telugu,happy,festival,clear
+Chakkani Bike Undhi,Ram Miriyala,Telugu,happy,roadtrip,clear
+Neeli Kanthalle,Haricharan,Telugu,fear,home,cloudy
+Idhe Kadha Nee Katha,Sid Sriram,Telugu,fear,home,night
+Malare,Pradeep Kumar,Malayalam,happy,beach,sunny
+Entammede Jimikki Kammal,Vineeth Sreenivasan,Malayalam,happy,party,clear
 Pavizha Mazha,Shreya Ghoshal,Malayalam,sad,home,rain
 Manathe Chandanakkeeru,Harishankar KS,Malayalam,happy,festival,clear
-Thumbi Vaa,MG Sreekumar,Malayalam,romantic,roadtrip,cloudy
+Thumbi Vaa,MG Sreekumar,Malayalam,happy,roadtrip,cloudy
+Aaromale,Alphonse Joseph,Malayalam,fear,beach,night
+Kun Faya Kun,A.R. Rahman,Malayalam,fear,concert,night
+Uyire,Usha Uthup,Malayalam,fear,home,rain
+Paippinte Kadha,Sithara Krishnakumar,Malayalam,neutral,roadtrip,clear
+Minnaminungu,Shweta Mohan,Malayalam,happy,festival,clear
+Mizhiyil Ninnum,Karthik,Malayalam,fear,home,cloudy
+Neermathalam,KS Chithra,Malayalam,fear,home,night

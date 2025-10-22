@@ -10,6 +10,11 @@ from transformers.models.clip import CLIPProcessor, CLIPModel
 import torch
 
 # -------------------------------
+# Global Constants
+# -------------------------------
+MUSIC_ICON = "🎵"
+
+# -------------------------------
 # Streamlit page config MUST be first
 # -------------------------------
 st.set_page_config(
@@ -92,12 +97,16 @@ st.markdown("""
 
         .song-card:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(2,6,23,0.75); }
 
-        .song-cover {
+        .music-icon {
             width: 100%;
             height: 140px;
-            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1e2726 0%, #2c3938 100%);
             border-radius: 8px;
             margin-bottom: 10px;
+            font-size: 4rem;
         }
 
         .song-info { color: #e6f4ee; padding: 0 4px; }
@@ -195,34 +204,41 @@ def load_songs(csv_path):
 SONGS_CSV_PATH = os.path.join(os.path.dirname(__file__), 'songs.csv')
 songs_df = load_songs(SONGS_CSV_PATH)
 
-# Region to language mapping
-def get_language_from_region(location):
-    # Indian states mapping
-    indian_states = {
-        "Tamil Nadu": "Tamil",
-        "Karnataka": "Kannada",
-        "Kerala": "Malayalam",
-        "Andhra Pradesh": "Telugu",
-        "Telangana": "Telugu",
-        "Maharashtra": "Marathi",
-        "West Bengal": "Bengali",
-        "Gujarat": "Gujarati",
-        "Punjab": "Punjabi"
+# Region to language mapping with fallbacks
+LANGUAGE_MAPPING = {
+    "Tamil Nadu": {
+        "primary": "Tamil",
+        "fallbacks": ["English"]
+    },
+    "Kerala": {
+        "primary": "Malayalam",
+        "fallbacks": ["Tamil", "English"]
+    },
+    "Andhra Pradesh": {
+        "primary": "Telugu",
+        "fallbacks": ["Tamil", "English"]
+    },
+    "Telangana": {
+        "primary": "Telugu",
+        "fallbacks": ["Tamil", "English"]
+    },
+    "Karnataka": {
+        "primary": "Kannada",
+        "fallbacks": ["Tamil", "English"]
     }
+}
+
+def get_language_preferences(location):
+    region = location.get('region', '')
     
-    # International regions mapping
-    international_regions = {
-        "South Korea": "Korean",
-        "Japan": "Japanese",
-        "Spain": "Spanish",
-        "France": "French",
-        "Germany": "German",
-        "Italy": "Italian",
-        "China": "Chinese",
-        "United States": "English",
-        "United Kingdom": "English",
-        "Australia": "English",
-        "Canada": "English"
+    # Get language preferences for the region
+    if region in LANGUAGE_MAPPING:
+        return LANGUAGE_MAPPING[region]
+    
+    # Default to English with Hindi fallback for other regions
+    return {
+        "primary": "English",
+        "fallbacks": ["Hindi", "Tamil", "English"]
     }
     
     region = location.get('region', '')
@@ -259,10 +275,9 @@ cols = st.columns(4)
 for idx, (_, song) in enumerate(filtered_songs.iterrows()):
     col_idx = idx % 4
     with cols[col_idx]:
-        cover = f"https://picsum.photos/seed/{song['songname'].replace(' ','')}/400/400"
         st.markdown(f"""
             <div class="song-card">
-                <img class="song-cover" src="{cover}" alt="cover" />
+                <div class="music-icon">{MUSIC_ICON}</div>
                 <div class="song-info">
                     <div class="song-title">{song['songname']}</div>
                     <div class="song-artist">by {song['artist']}</div>
@@ -307,8 +322,8 @@ def load_clip_model():
     return clip_model, clip_processor
 
 clip_model, clip_processor = load_clip_model()
-scene_labels = ["indoor", "outdoor", "party", "nature", "street", "night", "office",
-                "home", "restaurant", "beach", "concert", "mountain", "park"]
+scene_labels = ["indoor", "outdoor", "party", "nature", "street", "office",
+                "home", "restaurant", "beach", "concert", "mountain", "park", "club"]
 
 # -------------------------------
 # Utility Functions
@@ -339,11 +354,42 @@ def detect_emotion(frame):
     return {'emotion': best_emotion, 'confidence': best_conf}
 
 def classify_scene(image):
-    inputs = clip_processor(text=scene_labels, images=image, return_tensors="pt", padding=True)
+    context_categories = [
+        "party",     # Party/celebration environment
+        "concert",   # Live music/performance setting
+        "home",      # Indoor/residential setting
+        "beach",     # Coastal/waterfront environment
+        "gym",       # Exercise/fitness setting
+        "roadtrip",  # Travel/journey setting
+        "festival",  # Cultural/festive gathering
+        "restaurant",# Dining/social setting
+        "office",    # Work environment
+        "park",      # Outdoor recreational space
+        "normal"     # Default/general setting
+    ]
+    
+    # Process image with CLIP to get probabilities
+    inputs = clip_processor(text=context_categories, images=image, return_tensors="pt", padding=True)
+    outputs = clip_model(**inputs)
+    probs = outputs.logits_per_image.softmax(dim=1)
+    
+    # Get top prediction and confidence
+    probs = probs[0].detach().numpy()
+    max_prob = probs.max()
+    pred_idx = probs.argmax()
+    
+    # If confidence is very low, return "normal"
+    if max_prob < 0.3:
+        return "normal"
+    
+    # Process image with CLIP
+    inputs = clip_processor(text=context_categories, images=image, return_tensors="pt", padding=True)
     outputs = clip_model(**inputs)
     probs = outputs.logits_per_image.softmax(dim=1)
     pred_idx = probs.argmax().item()
-    return scene_labels[pred_idx]
+    return context_categories[pred_idx]
+    
+    return context_mapping.get(predicted_context, predicted_context)
 
 def get_auto_location():
     try:
@@ -368,58 +414,322 @@ def get_weather(api_key, location):
         return {"climate": "clear", "temp": 25}
 
 def predict_image_weather(image):
-    scene_labels_weather = ["rain", "clear", "night", "party", "nature", "street", "indoor", "outdoor", "beach", "mountain", "office", "home"]
-    inputs = clip_processor(text=scene_labels_weather, images=image, return_tensors="pt", padding=True)
+    # Environmental conditions focused on atmosphere and lighting
+    climate_descriptors = [
+        # Broad daylight conditions
+        "bright daylight scene", "sunny outdoor scene", "clear bright day",
+        # Dark/Night conditions
+        "dark night scene", "low light environment", "evening darkness",
+        # Indoor/Outdoor lighting
+        "indoor lighting", "outdoor natural light", "artificial lighting",
+        # Weather indicators
+        "rainy scene", "cloudy weather", "foggy atmosphere", "clear sky",
+        # Time of day
+        "sunrise scene", "sunset scene", "midday bright", "evening scene"
+    ]
+    
+    inputs = clip_processor(text=climate_descriptors, images=image, return_tensors="pt", padding=True)
     outputs = clip_model(**inputs)
     probs = outputs.logits_per_image.softmax(dim=1)
-    pred_idx = probs.argmax().item()
-    return scene_labels_weather[pred_idx]
+    
+    # Get top 2 predictions
+    top2_probs, top2_indices = torch.topk(probs, 2)
+    top_pred = climate_descriptors[top2_indices[0][0]]
+    
+    # Map detailed climate descriptors to simpler categories
+    climate_mapping = {
+        "bright daylight scene": "clear",
+        "sunny outdoor scene": "clear",
+        "clear bright day": "clear",
+        "dark night scene": "night",
+        "low light environment": "night",
+        "evening darkness": "night",
+        "indoor lighting": "clear",
+        "outdoor natural light": "clear",
+        "artificial lighting": "clear",
+        "rainy scene": "rain",
+        "cloudy weather": "cloudy",
+        "foggy atmosphere": "cloudy",
+        "clear sky": "clear",
+        "sunrise scene": "clear",
+        "sunset scene": "clear",
+        "midday bright": "clear",
+        "evening scene": "cloudy"
+    }
+    
+    # Get top prediction and confidence
+    probs = probs[0].detach().numpy()
+    max_prob = probs.max()
+    pred_idx = probs.argmax()
+    
+    # If confidence is very low, default to "clear"
+    if max_prob < 0.3:
+        return "clear"
+    
+    climate = climate_mapping.get(climate_descriptors[pred_idx], "clear")
+    return climate
+    
+    return climate_mapping.get(top_pred, top_pred)
 
 
-# Recommend songs based on user context fields using a sophisticated scoring system
+# Context-based mapping with emotions and vibes
+CONTEXT_MAPPING = {
+    'party': {
+        'emotions': ['happy', 'surprise', 'fun'],
+        'vibe': 'energetic, dance, upbeat'
+    },
+    'home': {
+        'emotions': ['fear', 'sad', 'neutral'],
+        'vibe': 'emotional, introspective, cozy'
+    },
+    'roadtrip': {
+        'emotions': ['happy', 'neutral', 'romantic'],
+        'vibe': 'travel, chill, rhythm'
+    },
+    'gym': {
+        'emotions': ['angry', 'proud', 'energetic'],
+        'vibe': 'high-beat, motivational'
+    },
+    'concert': {
+        'emotions': ['fear', 'surprise', 'romantic'],
+        'vibe': 'powerful, emotional'
+    },
+    'beach': {
+        'emotions': ['fear', 'romantic', 'happy'],
+        'vibe': 'reflective, atmospheric'
+    },
+    'festival': {
+        'emotions': ['happy', 'proud', 'surprise'],
+        'vibe': 'celebration, mass, upbeat'
+    }
+}
+
+# Climate-based mapping with emotions and song styles
+CLIMATE_MAPPING = {
+    'sunny': {
+        'emotions': ['happy', 'romantic', 'surprise'],
+        'vibe': 'bright, energetic, outdoor vibe'
+    },
+    'clear': {
+        'emotions': ['happy', 'neutral', 'proud', 'party'],
+        'vibe': 'lively, festival, confidence'
+    },
+    'rain': {
+        'emotions': ['sad', 'fear', 'romantic'],
+        'vibe': 'slow, emotional, soothing'
+    },
+    'cloudy': {
+        'emotions': ['neutral', 'fear', 'romantic'],
+        'vibe': 'calm, reflective, roadtrip'
+    },
+    'night': {
+        'emotions': ['fear', 'sad', 'romantic'],
+        'vibe': 'deep, emotional, introspective'
+    }
+}
+
+# Recommend songs based on priority: 1) language → 2) emotion → 3) context → 4) climate
 def recommend_songs_from_csv(user_emotion, user_context, user_climate, user_weather, user_location, n=8):
     df = songs_df.copy()
-    preferred_language = get_language_from_region(user_location)
+    
+    # 1️⃣ Language Priority
+    lang_prefs = get_language_preferences(user_location)
+    primary_lang = lang_prefs["primary"]
+    fallback_langs = lang_prefs["fallbacks"]
+    
+    # Start with primary language
+    recommendations = df[df['language'] == primary_lang].copy()
+    
+    # 2️⃣ Emotion Matching with Fallbacks
+    # First try exact emotion match
+    emotion_matches = recommendations[recommendations['emotion'].str.lower() == user_emotion.lower()]
+    
+    # If we don't have enough songs, use emotional fallbacks
+    if len(emotion_matches) < n:
+        # Define emotion groups for fallbacks
+        emotion_groups = {
+            'anger': ['anger', 'disgust', 'surprise'],
+            'disgust': ['disgust', 'anger', 'surprise'],
+            'fear': ['fear', 'sad', 'neutral'],
+            'happy': ['happy', 'surprise', 'neutral'],
+            'sad': ['sad', 'fear', 'neutral'],
+            'surprise': ['surprise', 'happy', 'neutral'],
+            'neutral': ['neutral', 'happy', 'calm']
+        }
+        
+        # Get compatible emotions for the current emotion
+        compatible_emotions = emotion_groups.get(user_emotion.lower(), ['neutral', 'happy'])
+        
+        # Add songs with compatible emotions
+        additional_matches = recommendations[recommendations['emotion'].str.lower().isin(compatible_emotions)]
+        emotion_matches = pd.concat([emotion_matches, additional_matches]).drop_duplicates()
+    
+    # If still not enough, try songs from all languages with the same emotion
+    if len(emotion_matches) < n:
+        all_lang_emotion_matches = df[df['emotion'].str.lower() == user_emotion.lower()]
+        emotion_matches = pd.concat([emotion_matches, all_lang_emotion_matches]).drop_duplicates()
+    
+    # 3️⃣ Context Matching
+    context_matches = emotion_matches[emotion_matches['context'].str.lower() == user_context.lower()]
+    if len(context_matches) < n:
+        # Add songs with matching emotion but different contexts
+        context_matches = pd.concat([context_matches, emotion_matches]).drop_duplicates()
+    
+    # 4️⃣ Climate Refinement
+    climate_matches = context_matches[context_matches['image_climate'].str.lower() == user_climate.lower()]
+    if len(climate_matches) < n:
+        # Add songs with compatible climates
+        if user_climate in CLIMATE_MAPPING:
+            compatible_climates = [user_climate] + ['clear', 'sunny']  # Always consider clear/sunny as acceptable
+            climate_matches = pd.concat([
+                climate_matches,
+                context_matches[context_matches['image_climate'].str.lower().isin(compatible_climates)]
+            ]).drop_duplicates()
+    
+    final_recommendations = climate_matches
+    
+    # If we still need more songs, try fallback languages
+    if len(final_recommendations) < n:
+        for fallback_lang in fallback_langs:
+            fallback_songs = df[
+                (df['language'] == fallback_lang) &
+                (
+                    (df['emotion'].str.lower() == user_emotion.lower()) |
+                    (df['context'].str.lower() == user_context.lower())
+                )
+            ]
+            final_recommendations = pd.concat([final_recommendations, fallback_songs]).drop_duplicates()
+            if len(final_recommendations) >= n:
+                break
+    
+    # If still no songs found, try one final attempt with broader criteria
+    if len(final_recommendations) == 0:
+        final_recommendations = df[
+            (df['language'].isin([primary_lang] + fallback_langs)) |
+            (df['emotion'].str.lower() == 'neutral') |
+            (df['emotion'].str.lower() == 'happy')
+        ].head(n)
+        
+    # If absolutely no songs are found, return empty DataFrame with message
+    if len(final_recommendations) == 0:
+        st.error("😕 No songs found matching your criteria. Please try with a different image or emotion.")
+    
+    # Final sorting based on match quality
+    final_recommendations['score'] = 0
+    
+    # Define emotion groups for scoring
+    emotion_groups = {
+        'happy': ['happy', 'surprise', 'neutral'],
+        'sad': ['sad', 'fear', 'disgust'],
+        'anger': ['anger', 'disgust', 'fear'],
+        'disgust': ['disgust', 'anger', 'fear'],
+        'fear': ['fear', 'sad', 'neutral'],
+        'surprise': ['surprise', 'happy', 'neutral'],
+        'neutral': ['neutral', 'happy', 'calm']
+    }
+    
+    # Get compatible emotions for the current emotion
+    compatible_emotions = emotion_groups.get(user_emotion.lower(), ['neutral', 'happy'])
+    
+    for idx, row in final_recommendations.iterrows():
+        score = 0
+        # 1. Language matching (0-30 points)
+        if row['language'] == primary_lang:
+            score += 30
+        elif row['language'] in fallback_langs:
+            score += 15
+        
+        # 2. Emotion matching (0-40 points)
+        if row['emotion'].lower() == user_emotion.lower():
+            score += 40  # Perfect emotion match
+        elif row['emotion'].lower() in compatible_emotions:
+            score += 25  # Compatible emotion match
+        
+        # 3. Context matching (0-20 points)
+        if row['context'].lower() == user_context.lower():
+            score += 20
+        elif row['context'].lower() in ['home', 'normal']:  # Safe fallback contexts
+            score += 10
+        
+        # 4. Climate matching (0-10 points)
+        if row['image_climate'].lower() == user_climate.lower():
+            score += 10
+        elif user_climate.lower() in ['clear', 'sunny'] and row['image_climate'].lower() in ['clear', 'sunny']:
+            score += 5
+        
+        final_recommendations.at[idx, 'score'] = score
+    
+    final_recommendations = final_recommendations.sort_values('score', ascending=False)
+    return final_recommendations.head(n)
+    
+    # If context is not recognized, use the first preferred context for the emotion
+    if user_context not in df['context'].unique():
+        user_context = preferred_contexts[0]
+    
+    # Ensure climate has a valid value
+    if user_climate not in preferred_climates:
+        user_climate = preferred_climates[0]
     
     scores = []
     for _, row in df.iterrows():
         # Base score starts at 0
         score = 0
         
-        # 1. Language Relevance (0-30 points)
+        # 1. Emotional Match (0-40 points)
+        if row['emotion'].lower() == user_emotion.lower():
+            score += 40  # Perfect emotion match
+        elif user_emotion == "neutral" and row['emotion'].lower() in ['happy', 'neutral']:
+            score += 25  # Good matches for neutral mood
+        elif user_emotion == "sad" and row['emotion'].lower() in ['neutral']:
+            score += 15  # Calming songs for sad mood
+        
+        # 2. Language Relevance (0-25 points)
         if row['language'] == preferred_language:
-            score += 30  # Perfect language match
+            score += 25  # Perfect language match
         elif row['language'] == "English":
             score += 15  # English as universal second language
-        
-        # 2. Emotional Match (0-25 points)
-        if row['emotion'].lower() == user_emotion.lower():
-            score += 25  # Perfect emotion match
         
         # 3. Context Match (0-20 points)
         if row['context'].lower() == user_context.lower():
             score += 20  # Perfect context match
+        elif row['context'].lower() in preferred_contexts:
+            score += 15  # Context matches emotion's recommended contexts
+        elif user_context == "normal" and row['context'].lower() in ['home', 'roadtrip']:
+            score += 10  # Default contexts for normal situation
         
-        # 4. Environmental Factors (0-25 points combined)
+        # 4. Climate/Ambiance Match (0-15 points)
         if row['image_climate'].lower() == user_climate.lower():
-            score += 25  # Climate match from image and scene
+            score += 15  # Perfect climate match
+        elif row['image_climate'].lower() in preferred_climates:
+            score += 10  # Climate matches emotion's typical climates
+        elif user_climate in ['clear', 'sunny'] and row['image_climate'].lower() in ['clear', 'sunny']:
+            score += 8  # Good weather matches
             
         scores.append(score)
     
     df['score'] = scores
     
-    # Sort by score and get top n recommendations
-    recommended = df.sort_values(by='score', ascending=False)
+    # Filter by minimum score threshold to ensure quality recommendations
+    min_score = 30  # Require at least some matching criteria
     
-    # First, get songs in preferred language with high scores
+    # Sort by score and get recommendations
+    recommended = df[df['score'] >= min_score].sort_values(by='score', ascending=False)
+    
+    if len(recommended) < n:
+        # If we don't have enough high-scoring songs, include some neutral/happy songs
+        additional_songs = df[
+            (df['emotion'].isin(['neutral', 'happy'])) &
+            (df['score'] > 0)
+        ].sort_values(by='score', ascending=False)
+        recommended = pd.concat([recommended, additional_songs]).drop_duplicates()
+    
+    # Balance recommendations between preferred language and others
     primary_recs = recommended[recommended['language'] == preferred_language].head(n//2)
-    
-    # Then, get other high-scoring songs regardless of language
     remaining_slots = n - len(primary_recs)
     other_recs = recommended[recommended['language'] != preferred_language].head(remaining_slots)
     
-    # Combine and return final recommendations
-    final_recs = pd.concat([primary_recs, other_recs])
+    # Combine and ensure we don't exceed n recommendations
+    final_recs = pd.concat([primary_recs, other_recs]).head(n)
     return final_recs
     scores.append(score)
     df['score'] = scores
@@ -637,23 +947,55 @@ if uploaded_file is not None:
     
     # Display recommendation factors
     st.sidebar.markdown("### 📊 Recommendation Factors")
+    language_prefs = get_language_preferences(location)
     st.sidebar.markdown(f"""
-        - **Language Priority**: {get_language_from_region(location)}
+        - **Language Priority**: {language_prefs['primary']} (Fallbacks: {', '.join(language_prefs['fallbacks'])})
         - **Emotion**: {emotion.title()}
         - **Scene Context**: {scene_result}
         - **Image Climate**: {image_climate}
         - **Local Weather**: {user_climate}
     """)
 
-    # Display recommendations in a 4-column grid
-    cols = st.columns(4)
-    for idx, (_, song) in enumerate(recommended_songs.iterrows()):
-        col_idx = idx % 4
-        with cols[col_idx]:
-            cover = f"https://picsum.photos/seed/{song['songname'].replace(' ','')}/400/400"
-            st.markdown(f"""
-                <div class="song-card">
-                    <img class="song-cover" src="{cover}" alt="cover" />
+    # Display recommendations if songs were found
+    if not recommended_songs.empty:
+        cols = st.columns(4)
+        for idx, (_, song) in enumerate(recommended_songs.iterrows()):
+            col_idx = idx % 4
+            with cols[col_idx]:
+                st.markdown(f"""
+                    <div class="song-card">
+                        <div class="music-icon">🎵</div>
+                        <div class="song-info">
+                            <div class="song-title">{song['songname']}</div>
+                            <div class="song-artist">by {song['artist']}</div>
+                            <div class="song-genre">Language: {song['language']}</div>
+                            <div class="song-mood">Mood: {song['emotion'].title()}</div>
+                            <div class="song-extra">Context: {song['context']}</div>
+                            <div class="song-actions">
+                                <div class="btn btn-play">▶</div>
+                                <div class="btn btn-like">♡</div>
+                                <div class="btn btn-favorite">★</div>
+                                <div class="btn btn-preview">▶</div>
+                            </div>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+    else:
+        st.warning("🎵 No songs found matching your current mood and preferences. Try uploading a different image or adjusting the settings.")
+        st.markdown("""
+            <div style="text-align: center; padding: 2rem; background: linear-gradient(90deg,#08110f,#10221d); border-radius: 12px; margin: 1rem 0;">
+                <h3>💡 Suggestions:</h3>
+                <ul style="list-style-type: none; padding: 0;">
+                    <li>• Try uploading a different image</li>
+                    <li>• Check if the image has clear facial expressions</li>
+                    <li>• Ensure good lighting in your photo</li>
+                    <li>• Try different scenes or contexts</li>
+                </ul>
+            </div>
+        """, unsafe_allow_html=True)
+        st.markdown(f"""
+            <div class="song-card">
+                    <div class="music-icon">{MUSIC_ICON}</div>
                     <div class="song-info">
                         <div class="song-title">{song['songname']}</div>
                         <div class="song-artist">by {song['artist']}</div>
