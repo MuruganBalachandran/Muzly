@@ -4,6 +4,7 @@
 This directory contains the core model components of the Muzly Music Recommender system, which uses computer vision and machine learning to recommend music based on emotions, context, and environmental factors.
 
 ## UI Images
+<img width="1904" height="893" alt="Image" src="https://github.com/user-attachments/assets/928d88a4-bdd7-4761-8694-57057ebc9b54" />
 <img width="1911" height="780" alt="Image" src="https://github.com/user-attachments/assets/0e1f2e9a-4cde-49e0-81c5-befff41075f5" />
 <img width="1907" height="596" alt="Image" src="https://github.com/user-attachments/assets/7a8d1373-dba1-4430-85cb-5f531b21df57" />
 <img width="1914" height="643" alt="Image" src="https://github.com/user-attachments/assets/a3b84084-0fb7-4f86-978c-eeb1df1dfd08" />
